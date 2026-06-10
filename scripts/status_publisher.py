@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
+import math
 import rospy
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
 from lab4.msg import RobotStatus
+
+
+def clean(values):
+    return [r for r in values if r > 0.0 and not math.isinf(r) and not math.isnan(r)]
+
 
 class StatusPublisher:
     def __init__(self):
@@ -27,13 +33,16 @@ class StatusPublisher:
             rate.sleep()
 
     def scan_callback(self, data):
-        # LiDAR: 0 = vorne, 90 = links, 270 = rechts
-        self.front = min(min(data.ranges[0:10] + data.ranges[350:360]), 10.0)
-        self.left = min(min(data.ranges[80:100]), 10.0)
-        self.right = min(min(data.ranges[260:280]), 10.0)
+        front_vals = clean(data.ranges[0:10] + data.ranges[350:360])
+        left_vals = clean(data.ranges[80:100])
+        right_vals = clean(data.ranges[260:280])
+        self.front = min(front_vals) if front_vals else 10.0
+        self.left = min(left_vals) if left_vals else 10.0
+        self.right = min(right_vals) if right_vals else 10.0
 
     def vel_callback(self, data):
         self.current_vel = data
+
 
 if __name__ == '__main__':
     try:
