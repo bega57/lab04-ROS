@@ -55,8 +55,7 @@ class MoveBetweenObjects:
         if not front_object_detected and not back_object_detected:
             twist.linear.x = 0.0
             if not rospy.is_shutdown():
-                if not rospy.is_shutdown():
-            self.pub.publish(twist)
+                self.pub.publish(twist)
             return
 
         if self.direction == 'FORWARD':
