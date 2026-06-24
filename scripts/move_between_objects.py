@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
-import math
-
 import rospy
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import LaserScan
-
-
-def clean(values):
-    return [r for r in values if r > 0.0 and not math.isinf(r) and not math.isnan(r)]
+from utils import clean
 
 
 class MoveBetweenObjects:

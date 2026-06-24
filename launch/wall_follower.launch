@@ -1,7 +1,8 @@
 <launch>
-  <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_stage_1.launch">
-    <arg name="model" value="waffle_pi"/>
-  </include>
+  <arg name="model" default="waffle_pi"/>
+  <env name="TURTLEBOT3_MODEL" value="$(arg model)"/>
+
+  <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_stage_1.launch"/>
 
   <node pkg="lab4" type="camera_node.py"        name="camera_node"      output="screen"/>
   <node pkg="lab4" type="status_publisher.py"   name="status_publisher" output="screen"/>
