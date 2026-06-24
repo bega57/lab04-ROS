@@ -3,9 +3,9 @@
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find lab4)/worlds/two_objects.world"/>
-    <arg name="paused" value="false"/>
+    <arg name="paused"     value="false"/>
     <arg name="use_sim_time" value="true"/>
-    <arg name="gui" value="true"/>
+    <arg name="gui"        value="true"/>
   </include>
 
   <param name="robot_description"
@@ -16,8 +16,9 @@
 
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
 
-  <node pkg="lab4" type="camera_node.py" name="camera_node" output="screen"/>
-  <node pkg="lab4" type="status_publisher.py" name="status_publisher" output="screen"/>
-  <node pkg="lab4" type="logger.py" name="logger" output="screen"/>
+  <node pkg="lab4" type="camera_node.py"          name="camera_node"          output="screen"/>
+  <node pkg="lab4" type="status_publisher.py"     name="status_publisher"     output="screen"/>
+  <node pkg="lab4" type="logging_control.py"      name="logging_control"      output="screen"/>
+  <node pkg="lab4" type="logger.py"               name="logger"               output="screen"/>
   <node pkg="lab4" type="move_between_objects.py" name="move_between_objects" output="screen"/>
 </launch>

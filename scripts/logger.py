@@ -4,12 +4,11 @@ import csv
 import os
 from datetime import datetime
 from lab4.msg import RobotStatus
-from lab4.srv import ToggleLogging, ToggleLoggingResponse
+
 
 class Logger:
     def __init__(self):
         rospy.init_node('logger')
-        self.logging_enabled = True
         self.log_dir = os.path.expanduser('~/catkin_ws/src/lab4/logs')
         os.makedirs(self.log_dir, exist_ok=True)
 
@@ -21,21 +20,13 @@ class Logger:
             writer.writerow(['timestamp', 'lin_x', 'ang_z',
                              'front', 'left', 'right'])
 
-        rospy.Service('/toggle_logging', ToggleLogging, self.handle_toggle)
         rospy.Subscriber('/robot_status', RobotStatus, self.status_callback)
 
         rospy.loginfo(f'Logger started. File: {self.log_file}')
-        rospy.loginfo('Logging is ON. Call /toggle_logging to switch.')
         rospy.spin()
 
-    def handle_toggle(self, req):
-        self.logging_enabled = req.enable
-        state = 'enabled' if req.enable else 'disabled'
-        rospy.loginfo(f'Logging {state}')
-        return ToggleLoggingResponse(success=True, message=f'Logging {state}')
-
     def status_callback(self, data):
-        if not self.logging_enabled:
+        if not rospy.get_param('/logging_enabled', True):
             return
         with open(self.log_file, 'a', newline='') as f:
             writer = csv.writer(f)
@@ -47,6 +38,7 @@ class Logger:
                 data.left_distance,
                 data.right_distance
             ])
+
 
 if __name__ == '__main__':
     try:
