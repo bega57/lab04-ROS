@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import math
+
 import rospy
-from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
+from sensor_msgs.msg import LaserScan
 
 
 def clean(values):
@@ -12,41 +13,65 @@ def clean(values):
 class MoveBetweenObjects:
     def __init__(self):
         rospy.init_node('move_between_objects')
+
         self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         rospy.Subscriber('/scan', LaserScan, self.scan_callback)
 
-        self.min_distance = 0.5
+        self.stop_distance = rospy.get_param('~stop_distance', 0.65)
+        self.object_detection_range = rospy.get_param('~object_detection_range', 3.5)
+        self.speed = rospy.get_param('~speed', 0.18)
+
         self.direction = 'FORWARD'
         self.last_switch = rospy.Time.now()
-        self.cooldown = rospy.Duration(2.0)  # 2s Sperre nach Richtungswechsel
+        self.cooldown = rospy.Duration(1.5)
 
         rospy.loginfo('Move Between Objects started')
         rospy.spin()
 
+    def get_min_distance(self, ranges, start, end):
+        values = clean(ranges[start:end])
+        return min(values) if values else 10.0
+
     def scan_callback(self, data):
-        front_vals = clean(data.ranges[0:10] + data.ranges[350:360])
-        back_vals = clean(data.ranges[170:190])
-        front = min(front_vals) if front_vals else 10.0
-        back = min(back_vals) if back_vals else 10.0
+        front_values = data.ranges[0:15] + data.ranges[345:360]
+        back_values = data.ranges[165:195]
+
+        front = min(clean(front_values)) if clean(front_values) else 10.0
+        back = min(clean(back_values)) if clean(back_values) else 10.0
+
+        front_object_detected = front < self.object_detection_range
+        back_object_detected = back < self.object_detection_range
 
         twist = Twist()
         now = rospy.Time.now()
         can_switch = (now - self.last_switch) > self.cooldown
 
+        rospy.loginfo_throttle(
+            2.0,
+            f'front={front:.2f}m detected={front_object_detected}, '
+            f'back={back:.2f}m detected={back_object_detected}, direction={self.direction}'
+        )
+
+        if not front_object_detected and not back_object_detected:
+            twist.linear.x = 0.0
+            self.pub.publish(twist)
+            return
+
         if self.direction == 'FORWARD':
-            if front < self.min_distance and can_switch:
+            if front_object_detected and front <= self.stop_distance and can_switch:
                 self.direction = 'BACKWARD'
                 self.last_switch = now
-                rospy.loginfo('Object ahead! Reversing...')
+                rospy.loginfo('Front object reached. Switching to BACKWARD.')
             else:
-                twist.linear.x = 0.2
+                twist.linear.x = self.speed
+
         elif self.direction == 'BACKWARD':
-            if back < self.min_distance and can_switch:
+            if back_object_detected and back <= self.stop_distance and can_switch:
                 self.direction = 'FORWARD'
                 self.last_switch = now
-                rospy.loginfo('Object behind! Going forward...')
+                rospy.loginfo('Back object reached. Switching to FORWARD.')
             else:
-                twist.linear.x = -0.2
+                twist.linear.x = -self.speed
 
         self.pub.publish(twist)
 
