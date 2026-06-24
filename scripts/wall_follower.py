@@ -2,6 +2,8 @@
 import rospy
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 from utils import clean
 
 
