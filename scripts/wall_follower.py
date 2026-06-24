@@ -55,7 +55,8 @@ class WallFollower:
                 if right > 1.5:
                     twist.angular.z = -0.3
 
-        self.pub.publish(twist)
+        if not rospy.is_shutdown():
+            self.pub.publish(twist)
 
 
 if __name__ == '__main__':
