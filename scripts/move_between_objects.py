@@ -54,6 +54,8 @@ class MoveBetweenObjects:
 
         if not front_object_detected and not back_object_detected:
             twist.linear.x = 0.0
+            if not rospy.is_shutdown():
+                if not rospy.is_shutdown():
             self.pub.publish(twist)
             return
 
@@ -73,7 +75,8 @@ class MoveBetweenObjects:
             else:
                 twist.linear.x = -self.speed
 
-        self.pub.publish(twist)
+        if not rospy.is_shutdown():
+            self.pub.publish(twist)
 
 
 if __name__ == '__main__':
