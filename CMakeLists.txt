@@ -43,6 +43,7 @@ catkin_install_python(PROGRAMS
   scripts/logger.py
   scripts/wall_follower.py
   scripts/move_between_objects.py
+  scripts/utils.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
